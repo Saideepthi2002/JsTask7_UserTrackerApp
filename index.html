@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>Mini User Tracker App</h1>
+    <h2 id="greet" style="color: red;"></h2>
+    <button onclick="reset()">Reset</button>
+    <script>
+      // polyfill for includes
+      if (!Array.prototype.includes) {
+        Array.prototype.includes = function (ele) {
+          return this.indexOf(ele) !== -1;
+        };
+      }
+
+      // base class
+      class User {
+        constructor(name) {
+          this.name = name;
+        }
+      }
+      // subclass
+      class Visitor extends User {
+        constructor(name, visitCount) {
+          super(name);
+          this.visitCount = visitCount;
+        }
+        greetings() {
+          const getsuffix = suffixfun(this.visitCount);
+          return `Hello ${this.name}, this is your ${this.visitCount}${getsuffix} visit`;
+        }
+      }
+
+      function suffixfun(num) {
+        const n = num % 10,
+          k = num % 100;
+
+        if (n == 1 && k !== 11) return "st";
+        if (n == 2 && k !== 12) return "nd";
+        if (n == 3 && k !== 13) return "rd";
+        return "th";
+      }
+
+      // save username in local storage
+      let username = localStorage.getItem("Username");
+      if (!username) {
+        username = prompt("Enter your name");
+        if (username) {
+          localStorage.setItem("Username", username);
+        }
+      }
+
+      // set cookie
+      function setCookie(name, value, expire_days) {
+        const maxAge = expire_days * 24 * 60 * 60;
+        document.cookie = `${name}=${value};max-age=${maxAge};path=/`;
+      }
+      function getCookie(cookieName) {
+        const cookie = document.cookie;
+        const cookie_arr = cookie.split(";");
+        for (let i of cookie_arr) {
+          // i=['name=Jhon']
+          const [key, value] = i.trim().split("=");
+          // ['name','jhon']
+          if (key === cookieName) {
+            return value;
+          }
+        }
+        return null;
+      }
+
+      let count = parseInt(getCookie("visitCount")) || 0;
+      count++;
+      setCookie("visitCount", count, 7);
+
+      let greet = document.getElementById("greet");
+      // creating  visitor object of Visitor class
+      const visitor_obj = new Visitor(username, count);
+      greet.innerText = visitor_obj.greetings();
+
+      function deleteCookie(name) {
+        document.cookie = `${name}=;max-age=0;path=/`;
+      }
+      function reset() {
+        localStorage.removeItem("Username");
+        deleteCookie("visitCount");
+        location.reload();
+      }
+    </script>
+  </body>
+</html>
